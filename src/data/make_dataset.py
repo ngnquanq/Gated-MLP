@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.append(r'C:\Users\84898\Desktop\project\Complete\Gated MLP')
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -14,22 +18,14 @@ batch_size = 32
 tokenizer = get_tokenizer("basic_english")
 
 def load_data():
-    train = pd.read_csv("../../data/train.csv")
-    test = pd.read_csv("../../data/test.csv")
+    train = pd.read_csv(r'C:\Users\84898\Desktop\project\Complete\Gated MLP\data\train.csv')
+    test = pd.read_csv(r'C:\Users\84898\Desktop\project\Complete\Gated MLP\data\test.csv')
     return train, test
 
-def yield_tokens(data_iter,tokenizer):
-    for _, text in data_iter:
-        yield tokenizer(text)
+def yield_tokens(sentences, tokenizer):
+    for sentence in sentences:
+        yield tokenizer(sentence)
         
-def build_vocab(data, tokenizer, vocab_size = 1000):
-
-    vocab = build_vocab_from_iterator(yield_tokens(data['text']),
-                                      tokenizer, 
-                                      max_tokens=vocab_size,
-                                      specials=["<unk>"])
-    vocab.set_default_index(vocab["<unk>"])
-    return vocab
 
 def prepare_dataset(df, vocabulary, tokenizer):
     for index, row in df.iterrows():
@@ -50,15 +46,20 @@ def collate_batch(batch):
 
     return encoded_sentences, labels
 
-def get_loaders():
+def get_loaders(tokenizer, batch_size, vocab_size=1000):
     # Get data frame
     train_df, test_df = load_data()
     # Build vocabulary
-    vocab = build_vocab(train_df, tokenizer)
+    vocabulary = build_vocab_from_iterator(
+        yield_tokens(train_df['text'], tokenizer),
+        max_tokens=vocab_size,
+        specials=["<unk>"]
+    )
+    vocabulary.set_default_index(vocabulary["<unk>"])
     # Build dataset
-    train_dataset = prepare_dataset(train_df, vocab, tokenizer)
+    train_dataset = prepare_dataset(train_df, vocabulary, tokenizer)
     train_dataset = to_map_style_dataset(train_dataset)
-    test_dataset = prepare_dataset(test_df, vocab, tokenizer)
+    test_dataset = prepare_dataset(test_df, vocabulary, tokenizer)
     test_dataset = to_map_style_dataset(test_dataset)
     # Get data loaders
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, collate_fn=collate_batch)
