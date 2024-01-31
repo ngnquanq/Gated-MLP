@@ -24,7 +24,7 @@ def yield_tokens(data_iter,tokenizer):
         
 def build_vocab(data, tokenizer, vocab_size = 1000):
 
-    vocab = build_vocab_from_iterator(yield_tokens(data['review']),
+    vocab = build_vocab_from_iterator(yield_tokens(data['text']),
                                       tokenizer, 
                                       max_tokens=vocab_size,
                                       specials=["<unk>"])
@@ -65,5 +65,3 @@ def get_loaders():
     test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, collate_fn=collate_batch)
     return train_dataloader, test_dataloader
 
-if __name__ == "__main__":
-    get_loaders()
