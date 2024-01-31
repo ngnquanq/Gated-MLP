@@ -1,7 +1,6 @@
 import sys
 sys.path.append(r'C:\Users\84898\Desktop\project\Complete\Gated MLP')
 from src.data.make_dataset import *
-from components import *
 import torch
 import time
 
